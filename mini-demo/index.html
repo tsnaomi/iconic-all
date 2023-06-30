@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>mini demo</title>
+    <!-- jsPsych -->
+    <link href="https://unpkg.com/jspsych@7.0.0/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <!-- Google material icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <!-- custom -->
+    <link rel="stylesheet" href="../_static/css/ex.css"/>
+    <link rel="stylesheet" href="../_static/css/ex-m20.css"/>
+  </head>
+  <body>
+    <!-- jsPsych -->
+    <script src="https://unpkg.com/jspsych@7.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
+    <!-- custom -->
+    <script src="../_static/js/helpers.js"></script>
+    <script src="../_static/js/selection.js"></script>
+    <script src="../_static/js/madlib.js"></script>
+    <script src="../_static/js/production.js"></script>
+    <script src="../_static/js/mini-demo.js"></script>
+    <script>
+
+      // track progress
+      var N_TRIALS = 3;
+      var PROGRESS = 0;
+
+      // initialize jsPsych
+      var jsPsych = initJsPsych({
+
+        // add progress bar
+        show_progress_bar: true,
+        message_progress_bar: "",
+        auto_update_progress_bar: false,
+        on_trial_finish: update_progress_bar,
+
+        // // display results on finish
+        // on_finish: function() {
+        //   jsPsych.data.displayData();
+        // },
+      });
+
+      // create data & timeline
+      var data = m20();
+      var timeline = [];
+
+      // block 2 - modifier learning
+      timeline.push(data.block2);
+
+      // block 4 – two-modifier NP productions
+      timeline.push(data.block4);
+
+      // // thank you!
+      // timeline.push({
+      //   type: jsPsychHtmlButtonResponse,
+      //   stimulus: `<img style="height:12rem;margin-bottom:2rem" src="../_static/images/earth.svg" />`,
+      //   choices: [],
+      // });
+
+      // start the experiment
+      jsPsych.run(timeline);
+
+    </script>
+  </body>
+</html>

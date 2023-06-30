@@ -1,0 +1,27 @@
+/* demonstrative stimuli ------------------------------- */
+
+  .flip {
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+  }
+
+/* "red" ----------------------------------------------- */
+
+  .iconic-red {
+    color: #ea1943;
+    -webkit-text-stroke-width: 0.1rem;
+    -webkit-text-stroke-color: black;
+  }
+
+  button:disabled .iconic-red {
+    color: inherit;
+    -webkit-text-stroke-width: 0;
+    -webkit-text-stroke-color: none;
+  }
+
+  #jspsych-madlib-blank-line.jspsych-madlib-correct .iconic-red,
+  #jspsych-production-line.jspsych-production-correct .iconic-red {
+    color: var(--correct);
+    -webkit-text-stroke-width: 0;
+    -webkit-text-stroke-color: none;
+  }

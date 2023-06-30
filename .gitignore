@@ -1,0 +1,7 @@
+*.pyc
+*.DS_store
+
+__*
+
+server.py
+_static/images/
