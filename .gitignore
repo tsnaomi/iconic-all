@@ -1,7 +1,8 @@
+__*
+
 *.pyc
 *.DS_store
 
-__*
+_static/images/*.svg
 
 server.py
-_static/images/

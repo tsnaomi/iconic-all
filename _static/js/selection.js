@@ -1,3 +1,4 @@
+// jshint ignore:start
 var jsPsychSelection = (function (jspsych) {
   "use strict";
 
@@ -47,7 +48,7 @@ var jsPsychSelection = (function (jspsych) {
         default: "<button class='jspsych-btn'>%choice%</button>",
         array: true,
       },
-      // If set to true, then the subject must click the correct 
+      // If set to true, then the subject must click the correct
       // response button after feedback in order to advance to next trial.
       force_correct_button_press: {
         type: jspsych.ParameterType.BOOL,
@@ -100,10 +101,14 @@ var jsPsychSelection = (function (jspsych) {
         var trial_html = `<div id="jspsych-selection-stimulus">` + trial.stimulus + `</div>`;
         // add buttons
         trial_html += `<div id="jspsych-selection-btngroup">`;
-        if (trial.data_choices) {
-          [trial.choices, trial.data_choices] = shuffle_together(trial.choices, trial.data_choices);
-        } else {
-          trial.choices = jsPsych.randomization.shuffle(trial.choices);
+        if (trial.shuffle) {
+          if (trial.data_choices) {
+            [trial.choices, trial.data_choices] = shuffle_together(trial.choices, trial.data_choices);
+          } else {
+            trial.choices = jsPsych.randomization.shuffle(trial.choices);
+            trial.data_choices = trial.choices;
+          }
+        } else if (!trial.data_choices) {
           trial.data_choices = trial.choices;
         }
         for (var i = 0; i < trial.choices.length; i++) {
@@ -194,7 +199,7 @@ var jsPsychSelection = (function (jspsych) {
       // end trial if a time limit is set
       if (trial.trial_duration !== null) {
         jsPsych.pluginAPI.setTimeout(() => {
-          display_feedback('', false, true)
+          display_feedback('', false, true);
         }, trial.trial_duration);
       }
     }

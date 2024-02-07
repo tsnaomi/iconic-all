@@ -1,0 +1,1 @@
+We created the fonts in this directory with [Icomoon](https://icomoon.io/), using icons from [Flaticon](https://www.flaticon.com/) and [Google Material Symbols](https://fonts.google.com/icons).

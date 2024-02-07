@@ -1,0 +1,317 @@
+/**
+ * ========================================================
+ * Instructions & questionnaire ("bookends") styling
+ * ========================================================
+ */
+
+:root {
+  /* vertical spacing between instruction elements */
+  --intro-bottom-spacing: 1.5rem;
+
+  /* vertical spacing between questionnaire elements */
+  --q-bottom-spacing: 3rem;
+
+  /* amount to pad the bottom of a bookends container */
+  --bookends-container-bottom-spacing: 2.5%;
+}
+
+h1 {
+  line-height: initial;
+  margin: 0;
+}
+
+.instructions,
+.debrief {
+  line-height: 2rem;
+}
+
+.questionnaire > form > div > *,
+.debrief > div > * {
+  margin-bottom: var(--q-bottom-spacing);
+}
+
+.instructions,
+.questionnaire,
+.debrief {
+  padding-bottom: var(--bookends-container-bottom-spacing);
+}
+
+/* font sizing & spacing ------------------------------- */
+
+  #lexicon .iconic,
+  #phrases .iconic {
+    font-size: 2.7rem;
+  }
+
+  #phrases p.iconic {
+    letter-spacing: calc(2.7rem * var(--letter-spacing-prop));
+    padding-left: calc(2.7rem * var(--letter-spacing-prop));
+  }
+
+  #phrases .iconic.example {
+    font-size: 2rem;
+    letter-spacing: 0.4rem;
+    padding-left: 0.4rem;
+  }
+
+  #strategies .iconic,
+  .debrief .iconic {
+    font-size: 1em !important;
+    letter-spacing: calc(1em * var(--letter-spacing-prop));
+    padding-left: calc(1em * var(--letter-spacing-prop));
+  }
+
+/* widths ---------------------------------------------- */
+
+  .instructions {
+    max-width: 42.8rem;
+  }
+
+  .questionnaire > form > div {
+    max-width: 42rem;
+  }
+
+  #strategies {
+    width: 42rem;
+    max-width: 95vw;
+  }
+
+  #languages {
+    max-width: 54rem;
+  }
+
+  .debrief {
+    max-width: 47rem;
+  }
+
+/* instructions ---------------------------------------- */
+
+  .instructions p {
+    text-align: left;
+  }
+
+  .instructions > div > * {
+    margin-bottom: var(--intro-bottom-spacing);
+  }
+
+  .instructions table {
+      text-align: left;
+    }
+
+  .instructions tr img {
+    height: 2rem;
+    padding: 0 1.5rem;
+  }
+
+  .instructions tr:last-child img {
+    padding-right: 0;
+    padding-left: 1.75rem;
+  }
+
+  .instructions tr:first-child td {
+    padding-bottom: var(--intro-bottom-spacing);
+  }
+
+  .instructions tr:first-child td {
+    padding-bottom: var(--intro-bottom-spacing);
+  }
+
+  .instructions h1 {
+    margin-bottom: calc(1.12 * var(--intro-bottom-spacing));
+  }
+
+  .instructions p:last-child {
+    margin-bottom: calc(1.75 * var(--intro-bottom-spacing));
+  }
+
+  .instructions .iconic {
+    font-size: 1.25rem;
+    margin: 0 0.25rem;
+    line-height: 0;
+  }
+
+/* lesson, quiz, & quiz score -------------------------- */
+
+  .lesson,
+  .quiz,
+  .quiz-score {
+    padding-bottom: 5%;
+    padding-bottom: var(--bookends-container-bottom-spacing);
+  }
+
+  .lesson img,
+  .quiz img,
+  .quiz-score img {
+    height: 22rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .quiz img {
+    margin-right: -3rem;
+  }
+
+  .quiz-score p {
+    font-size: 4rem;
+    font-weight: bold;
+    line-height: 1em;
+  }
+
+  .quiz-score img {
+    margin-top: 2rem;
+  }
+
+/* questionnaires -------------------------------------- */
+
+  .questionnaire table {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .questionnaire p {
+    margin-bottom: 0.5rem;
+  }
+
+  input[type=text],
+  textarea,
+  select {
+    border: 1px solid #aaa;
+  }
+
+  input[type=text],
+  textarea {
+    font-family: "Open Sans", "Arial", sans-serif;
+    font-size: 14px;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+
+  input[type=text] {
+    height: 1.4rem;
+  }
+
+  textarea {
+    height: 5rem;
+    width: 94%;
+    max-width: 40rem;
+    padding: 0.4rem;
+  }
+
+  select {
+    height: 1.645rem;
+    text-align: center;
+    vertical-align: bottom;
+  }
+
+  small {
+    color: gray;
+  }
+
+/* lexicon translation --------------------------------- */
+
+  #lexicon table tr td:nth-child(3) {
+    padding-left: 3rem;
+  }
+
+  #lexicon td {
+    padding-bottom: 1.2rem;
+  }
+
+  #lexicon table tr:last-child td {
+    padding-bottom: 0;
+  }
+
+  #lexicon td.lexeme {
+    padding-right: 1rem;
+  }
+
+  #lexicon td.translate input {
+    width: 9rem;
+  }
+
+/* phrase translation ---------------------------------- */
+
+  #phrases p:first-child {
+    margin-bottom: 1.25rem;
+  }
+
+  #phrases input {
+    width: 19rem;
+    text-align: center;
+  }
+
+/* verbalization --------------------------------------- */
+
+  #verbalization .jspsych-survey-likert-statement {
+    font-size: inherit !important;
+  }
+
+  #verbalization .jspsych-survey-likert-opts {
+    font-size: 14px;
+    line-height: 1.1em;
+    list-style: none;
+    width: 100%;
+    padding: 0 0 2rem;
+    display: block;
+  }
+
+  #verbalization .jspsych-survey-likert-opt-label {
+    line-height: 1.1em;
+    color: #444;
+  }
+
+  #verbalization .jspsych-survey-likert-opts:before {
+    content: '';
+    position: relative;
+    top: 11px;
+    display: block;
+    background-color: #efefef;
+    height: 4px;
+    width: 100%;
+  }
+
+  #verbalization .jspsych-survey-likert-opts:last-of-type {
+    border-bottom: 0;
+  }
+
+  #verbalization .jspsych-survey-likert-opts li {
+    display: inline-block;
+    text-align: center;
+    vertical-align: top;
+    width: 19% !important;
+  }
+
+  #verbalization .jspsych-survey-likert-opts li input[type=radio] {
+    display: block;
+    position: relative;
+    top: 0;
+    left: 50%;
+    margin-left: -6px;
+  }
+
+  #verbalization > div > input {
+    width: 20rem;
+  }
+
+/* language history ------------------------------------ */
+
+  #languages table {
+    margin-top: 1rem;
+  }
+
+  #languages td {
+    width: 10rem;
+    padding: 0.1rem 0.25rem;
+  }
+
+  #languages thead td {
+    text-align: center;
+    font-size: 0.85rem;
+    line-height: 1.5rem;
+  }
+
+/* debrief --------------------------------------------- */
+
+  .debrief img {
+    height: initial;
+    width: 6rem;
+  }

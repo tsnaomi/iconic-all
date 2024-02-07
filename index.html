@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iconic ALL | CogSci 23</title>
+    <!-- jsPsych -->
+    <link href="https://unpkg.com/jspsych@7.0.0/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <!-- custom -->
+    <link rel="stylesheet" href="_static/css/ex-m20.css"/>
+    <link rel="stylesheet" href="_static/css/bookends.css"/>
+  </head>
+  <body>
+    <!-- jsPsych -->
+    <script src="https://unpkg.com/jspsych@7.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.2"></script>
+    <!-- custom -->
+    <script src="_static/js/helpers.js"></script>
+    <script src="_static/js/selection.js"></script>
+    <script src="_static/js/madlib.js"></script>
+    <script src="_static/js/production.js"></script>
+    <script src="_static/js/survey.js"></script>
+    <script src="_static/js/bookends.js"></script>
+    <script src="_static/js/ex-m20.js"></script>
+    <script src="_static/js/templates.js"></script>
+    <script>
+
+      // track progress
+      var N_TRIALS = 50;
+      var PROGRESS = 0;
+
+      // initialize jsPsych
+      var jsPsych = initJsPsych({
+
+        // add progress bar
+        show_progress_bar: true,
+        message_progress_bar: "",
+        auto_update_progress_bar: false,
+        on_trial_finish: update_progress_bar,
+
+        // display results on finish
+        on_finish: function() {
+          jsPsych.data.displayData();
+        },
+      });
+
+      // create timeline
+      var timeline = [];
+
+      // generate trials & templates
+      var base = base();            // from _static/js/bookends.js
+      var data = m20();             // from _static/js/ex-m20.js
+      var templates = templates();  // from _static/js/templates.js
+
+      // preload images
+      timeline.push(base.preload(data.images));
+
+      // welcome & instructions
+      timeline.push(base.instructions(templates.instructions));
+
+      // lesson screen
+      timeline.push(base.lesson());
+
+      // block 1 - noun learning
+      timeline.push(data.block1);
+
+      // block 2 - modifier learning
+      timeline.push(data.block2);
+
+      // block 3 - zero- and ones-modifier NP practice
+      timeline.push(data.block3a, data.block3b);
+
+      // quiz screen
+      timeline.push(base.quiz());
+
+      // block 4 – one- and two-modifier NP productions
+      timeline.push(data.block4a, data.block4b);
+
+      // score screen
+      timeline.push(base.score());
+
+      // questionnaire - lexicon translation
+      timeline.push(base.questionnaire(templates.lexicon, "lexicon", required));
+
+      // questionnaire - phrase translation
+      timeline.push(base.questionnaire(templates.phrases, "phrases"));
+
+      // questionnaire - strategies
+      timeline.push(base.questionnaire(templates.strategies, "strategies"));
+
+      // questionnaire - verbalization
+      timeline.push(base.questionnaire(templates.verbal, "verbalization"));
+
+      // questionnaire - language history
+      timeline.push(base.questionnaire(templates.languages, "languages"));
+
+      // (this is a good spot to save the data)
+
+      // debriefing & disclosure
+      timeline.push(base.debrief(templates.debrief));
+
+      // start the experiment
+      jsPsych.run(timeline);
+
+    </script>
+  </body>
+</html>

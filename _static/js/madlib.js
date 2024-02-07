@@ -1,15 +1,23 @@
+// jshint ignore:start
 var jsPsychMadlib = (function (jspsych) {
   "use strict";
 
   const info = {
     name: "madlib",
     parameters: {
-      // The HTML string to be displayed. Use the "%blank%" string to indicate
-      // where the blank line should be inserted.
-      stimulus: {
+      // The HTML string for the image stimulus.
+      img_stimulus: {
         type: jspsych.ParameterType.HTML_STRING,
-        pretty_name: "Stimulus",
+        pretty_name: "Image stimulus",
         default: undefined,
+      },
+      // The caption to be displayed under the image stimulus. Use the
+      // "%blank%" string to indicate where the blank line should be
+      // inserted.
+      caption_stimulus: {
+        type: jspsych.ParameterType.HTML_STRING,
+        pretty_name: "Caption stimulus",
+        default: "%blank%",
       },
       // Array containing the label(s) for the button(s).
       choices: {
@@ -48,7 +56,7 @@ var jsPsychMadlib = (function (jspsych) {
         default: '<button class="jspsych-btn">%choice%</button>',
         array: true,
       },
-      // If set to true, then the subject must click the correct 
+      // If set to true, then the subject must click the correct
       // response button after feedback in order to advance to next trial.
       force_correct_button_press: {
         type: jspsych.ParameterType.BOOL,
@@ -81,7 +89,7 @@ var jsPsychMadlib = (function (jspsych) {
       // extract useful elements
       var btns = display_element.querySelectorAll(".jspsych-madlib-btn");
       var answer = display_element.querySelector(`[data-choice='${trial.answer}']`);
-      var blank = display_element.querySelector("#jspsych-madlib-blank-line");
+      var blank = display_element.querySelector("#jspsych-madlib-blank");
       // gather the data to store for the trial
       var trial_data = {
         rt: null,
@@ -98,17 +106,27 @@ var jsPsychMadlib = (function (jspsych) {
       );
       // function to compose `display_element` HTML
       function compose_display() {
-        // modify and add stimulus
-        var trial_html = `<div id='jspsych-madlib-stimulus'>`;
-        // trial_html +=  trial.stimulus.replace("%blank%", `<div id="jspsych-madlib-blank-line"></div>`)
-        trial_html +=  trial.stimulus.replace("%blank%", `<span id="jspsych-madlib-blank-line"></span>`)
-        trial_html += `</div>`
+        // add and modify stimulus
+        var trial_html = `
+          <div id='jspsych-madlib-stimulus'>
+            ${trial.img_stimulus}
+            <div id="jspsych-madlib-caption" class="iconic">
+              <span class="jspsych-madlib-prompt">
+                ${trial.caption_stimulus}
+              </span>
+            </div>
+          </div>`;
+        trial_html =  trial_html.replace("%blank%", `</span><span id="jspsych-madlib-blank"></span><span class="jspsych-madlib-prompt">`);
         // add buttons
         trial_html += `<div id="jspsych-madlib-btngroup">`;
-        if (trial.data_choices) {
-          [trial.choices, trial.data_choices] = shuffle_together(trial.choices, trial.data_choices);
-        } else {
-          trial.choices = jsPsych.randomization.shuffle(trial.choices);
+        if (trial.shuffle) {
+          if (trial.data_choices) {
+            [trial.choices, trial.data_choices] = shuffle_together(trial.choices, trial.data_choices);
+          } else {
+            trial.choices = jsPsych.randomization.shuffle(trial.choices);
+            trial.data_choices = trial.choices;
+          }
+        } else if (!trial.data_choices) {
           trial.data_choices = trial.choices;
         }
         for (var i = 0; i < trial.choices.length; i++) {
@@ -207,7 +225,7 @@ var jsPsychMadlib = (function (jspsych) {
       // end trial if a time limit is set
       if (trial.trial_duration !== null) {
         jsPsych.pluginAPI.setTimeout(() => {
-          display_feedback('', false, true)
+          display_feedback('', false, true);
         }, trial.trial_duration);
       }
     }

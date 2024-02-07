@@ -1,3 +1,4 @@
+// jshint ignore:start
 var jsPsychProduction = (function (jspsych) {
   "use strict";
 
@@ -10,18 +11,31 @@ var jsPsychProduction = (function (jspsych) {
         pretty_name: "Stimulus",
         default: undefined,
       },
-      // Array containing the label(s) for the keyboard keys(s).
+      // Array containing keyboard keys.
       keys: {
         type: jspsych.ParameterType.STRING,
-        pretty_name: "Choices",
+        pretty_name: "Keyboard keys",
         default: undefined,
         array: true,
       },
-      // Optional prompt/prefix to appear before the cursor.
+      // If set to true, then shuffle the keyboard keys.
+      shuffle: {
+        type: jspsych.ParameterType.BOOL,
+        pretty_name: "Shuffle the keyboard keys",
+        default: false,
+      },
+      // Optional prompt to appear before/after the cursor.
       prompt: {
         type: jspsych.ParameterType.STRING,
-        pretty_name: "Optional prefixal rompt",
+        pretty_name: "Optional prompt",
         default: "",
+      },
+      // Whether the prompt should appear before (false -> after) the
+      // production.
+      prompt_before: {
+        type: jspsych.ParameterType.BOOL,
+        pretty_name: "Prompt location",
+        default: true,
       },
       // The correct response(s).
       answer: {
@@ -30,18 +44,44 @@ var jsPsychProduction = (function (jspsych) {
         default: null,
         array: true,
       },
-      // If set to true, then the subject will be shown the correct answer
+      // Required answer length if no answers are given.
+      answer_length: {
+        type: jspsych.ParameterType.INT,
+        pretty_name: "Answer length",
+        default: 0,
+      },
+      // The minimum number of characters the participant is required to enter
+      // before advancing if neither `force_correct_production` or
+      // `include_counter` are specified
+      min_char: {
+        type: jspsych.ParameterType.INT,
+        pretty_name: "Minimum characters",
+        default: 0,
+      },
+      // If set to true, then the participant will be shown the correct answer
       // giving a response.
       show_feedback: {
         type: jspsych.ParameterType.BOOL,
         pretty_name: "Show feedback",
         default: false,
       },
-      // If set to true, then the subject must click the correct 
+      // Show only the first correct answer during feedback.
+      first_answer_only: {
+        type: jspsych.ParameterType.BOOL,
+        pretty_name: "Show feedback",
+        default: false,
+      },
+      // If set to true, then the participant must click the correct
       // response button after feedback in order to advance to next trial.
       force_correct_production: {
         type: jspsych.ParameterType.BOOL,
         pretty_name: "Force correct production",
+        default: false,
+      },
+      // Whether to mark the response as correct, regardless of the response.
+      mark_correct: {
+        type: jspsych.ParameterType.BOOL,
+        pretty_name: "Mark correct",
         default: false,
       },
       // How long to show the trial.
@@ -70,6 +110,14 @@ var jsPsychProduction = (function (jspsych) {
         pretty_name: "Include character counter",
         default: false,
       },
+      // If set to true, the trial will provide "blanks" to indicate how many
+      // characters the participant needs to type. Overrides `include_counter`.
+      fill_in_the_blanks: {
+        type: jspsych.ParameterType.BOOL,
+        pretty_name: "Fill-in-the-blanks style.",
+        default: false,
+      },
+      // TODO: encode_red() as callback.
     },
   };
 
@@ -82,11 +130,19 @@ var jsPsychProduction = (function (jspsych) {
       if (typeof trial.answer == "string") {
         trial.answer = [trial.answer, ];
       }
+      // calculate answer and prompt lengths
+      var prompt_length = trial.prompt.length;
+      var answer_length = trial.answer_length || trial.answer[0].length;
+      // only include a character counter if there's an answer length
+      trial.include_counter = trial.include_counter && answer_length;
+      // create production blanks
+      var blank = `<span class="jspsych-production-blank"></span>`;
       // display trial
       display_element.innerHTML = compose_display();
       // extract useful elements
       var prompt = display_element.querySelector("#jspsych-production-prompt");
       var line = display_element.querySelector("#jspsych-production-line");
+      var blanks = display_element.querySelector("#jspsych-production-blanks");
       var keyboard = display_element.querySelector("#jspsych-production-keyboard");
       var keys = keyboard.querySelectorAll(".jspsych-production-key");
       var space = keyboard.querySelector("#jspsych-production-space-key");
@@ -110,70 +166,99 @@ var jsPsychProduction = (function (jspsych) {
         div => div.addEventListener("click", typewriter)
       );
       // add delete, enter, & space keybindings
-      document.addEventListener("keydown", bind_keys)
+      document.addEventListener("keydown", bind_keys);
       // add event listener to the submit button
       display_element.querySelector("#jspsych-production-submit").addEventListener("click", process_response);
       // function to compose `display_element` HTML
       function compose_display() {
         // add stimulus
         var trial_html = `<div id="jspsych-production-stimulus">` + trial.stimulus + `</div>`;
-        // add feedback div
-        if (trial.show_feedback || trial.force_correct_production) {
-          trial_html += `<div id="jspsych-production-answer" class="iconic"></div>`;
+        // add feedback div (even if it isn't used)
+        trial_html += `<div id="jspsych-production-answer" class="iconic"></div>`;
+        // create production line
+        var production_class;
+        var production_line;
+        if (trial.fill_in_the_blanks) {
+          // fill-in-the-blanks
+          production_class = "jspsych-production-line-blanks";
+          production_line =
+            `<span id="jspsych-production-line" class="iconic ${production_class}"></span>` +
+            `<span id="jspsych-production-blanks">${blank.repeat(answer_length)}</span>`;
+        } else {
+          // production line with cursor
+          production_class = "jspsych-production-line-cursor";
+          production_line = `<span id="jspsych-production-line" class="iconic ${production_class} blink-caret"></span>`;
         }
-        // add production line
-        trial_html += `
-          <div id="jspsych-production-line-container">
-            <span id="jspsych-production-prompt" class="iconic">${trial.prompt}</span><span id="jspsych-production-line" class="iconic blink-caret"></span>
-          </div>`
+        // add production container
+        trial_html += `<div id="jspsych-production-line-container" class="${production_class}">`;
+        if (trial.prompt) {
+          if (trial.prompt_before) {
+            trial_html += `<span id="jspsych-production-prompt" class="iconic jspsych-production-prompt-before">${trial.prompt}</span>${production_line}`;
+          } else {
+            trial_html += `${production_line}<span id="jspsych-production-prompt" class="iconic jspsych-production-prompt-after">${trial.prompt}</span>`;
+          }
+        } else {
+          trial_html += production_line;
+        }
+        trial_html += `</div>`;
         // add keyboard
+        var keyboard_html = ``;
+        if (trial.shuffle) {
+          trial.keys = jspsych.randomization.shuffle(keys);
+        }
+        for (var i = 0; i < trial.keys.length; i++) {
+          var key = trial.keys[i];
+          keyboard_html += `<button class="jspsych-production-key jspsych-production-key-input" data-key="${key}">${encode_red(key)}</button>`;
+        }
         if (trial.include_spacebar) {
           trial_html += `
             <div id="jspsych-production-keyboard" class="jspsych-production-keyboard-glow">
-              <div id="jspsych-production-keyboard-top" class="iconic">`;
-          for (var i = 0; i < trial.keys.length; i++) {
-            var key = trial.keys[i];
-            trial_html += `<button class="jspsych-production-key" data-key="${key}">${encode_red(key)}</button>`;
-          }
-          trial_html += `
+              <div id="jspsych-production-keyboard-top" class="iconic">
+                ${keyboard_html}
               </div>
               <div id="jspsych-production-keyboard-bottom">
-                <button class="jspsych-production-key" id="jspsych-production-space-key" data-key="&nbsp;">
-                  <span class="material-symbols-outlined">space_bar</span>
+                <button class="jspsych-production-key jspsych-production-key-input" id="jspsych-production-space-key" data-key="&nbsp;">
+                  <span class="function">s</span>
                 </button>
                 <button class="jspsych-production-key" id="jspsych-production-backspace-key" data-key="_delete">
-                  <span class="material-symbols-outlined">backspace</span>
+                  <span class="function">b</span>
                 </button>
               </div>
             </div>`;
         } else {
           trial_html += `
-            <div id="jspsych-production-keyboard" class="iconic jspsych-production-keyboard-glow">`;
-          for (var i = 0; i < trial.keys.length; i++) {
-            var key = trial.keys[i];
-            trial_html += `<button class="jspsych-production-key" data-key="${key}">${encode_red(key)}</button>`;
-          }
-          trial_html += `
-              <button class="jspsych-production-key" id="jspsych-production-backspace-key" data-key="_delete">
-                <span class="material-symbols-outlined">backspace</span>
-              </button>
+            <div id="jspsych-production-keyboard" class="iconic jspsych-production-keyboard-glow">
+              <div id="jspsych-production-keyboard-top" class="iconic">
+                ${keyboard_html}
+                <button class="jspsych-production-key" id="jspsych-production-backspace-key" data-key="_delete">
+                  <span class="function">b</span>
+                </button>
+              </div>
             </div>`;
         }
+        // add (open) character counter container
+        if (trial.include_counter) {
+          trial_html += `<div id="jspsych-production-counter-container">`;
+        }
         // add submit button
-        trial_html += `
-          <button id="jspsych-production-submit" disabled>
-            <span class="material-symbols-outlined">done</span>
-          </button>`;
-        // add character counter
-        if (trial.include_counter && (trial.answer_length || trial.answer)) {
-          trial.prompt_length = decode_red(trial.prompt).length;
-          trial.answer_length = decode_red(trial.answer[0]).length;
-          trial_html += `
-            <div id="jspsych-production-counter">
-              <span id="jspsych-production-count">${trial.prompt_length}</span>/${trial.answer_length + trial.prompt_length}
-            </div>`;
+        if (trial.include_counter || trial.fill_in_the_blanks || trial.min_char) {
+          trial_html +=
+            `<button id="jspsych-production-submit" disabled>` +
+              `<span class="function">c</span>` +
+            `</button>`;
         } else {
-          trial.include_counter = false;
+          trial_html +=
+            `<button id="jspsych-production-submit">` +
+              `<span class="function">c</span>` +
+            `</button>`;
+        }
+        // add character counter
+        if (trial.include_counter) {
+          trial_html +=
+              `<div id="jspsych-production-counter">` +
+                `<span id="jspsych-production-count">${prompt_length}</span>/${prompt_length + answer_length}` +
+              `</div>` +
+            `</div>`;
         }
         return trial_html;
       }
@@ -183,30 +268,54 @@ var jsPsychProduction = (function (jspsych) {
         if (key === null) {
           key = event.currentTarget.getAttribute("data-key");
         }
-        // get current production line & decode
-        var text = decode_red(line.textContent);
+        // get current production line
+        var text = line.textContent.replace(/\s+/g, " ").trim();
         // update & encode production line
         if (key === "_delete") {
-          text = text.slice(0,-1);
+          // delete most recently pressed key
+          text = text.slice(0, -1);
         } else {
+          // add the most recently pressed key
           text += key;
         }
+        // if fill-in-the blanks...
+        if (trial.fill_in_the_blanks) {
+          // tally missing characters
+          var chars_left = Math.max(answer_length - text.length, 0);
+          // update blanks (if necessary)
+          blanks.innerHTML = blank.repeat(chars_left);
+          if (chars_left) {
+            // enable input keys
+            display_element.querySelectorAll(".jspsych-production-key-input")
+              .forEach(btn => btn.disabled = false);
+          } else {
+            // lop off any additional characters (unlikely)
+            text = text.slice(0, answer_length);
+            // disable input keys
+            display_element.querySelectorAll(".jspsych-production-key-input")
+              .forEach(btn => btn.disabled = true);
+          }
+        //   blanks.innerHTML = blank.repeat(Math.max(answer_length - text.length, 0));
+        // update the character counter (if necessary)
+        } else if (trial.include_counter) {
+          count.innerHTML = prompt_length + text.length;
+        }
+        // encode & display text
         line.innerHTML = encode_red(text);
-        // if `trial.include_counter` is true, update the character counter,
-        // but only enable the submit button if the correct number of
-        // characters has been entered
-        if (trial.include_counter) {
-          count.innerHTML = trial.prompt_length + text.length;
-          if (line.textContent.length == trial.answer_length) {
+        // if `trial.include_counter` or `trial.fill_in_the_blanks` is true,
+        // only enable the submit button if the correct number of characters
+        // has been entered
+        if (trial.include_counter || trial.fill_in_the_blanks) {
+          if (text.length == answer_length) {
             // enable submit
             submit.disabled = false;
           } else {
             // disable submit
             submit.disabled = true;
           }
-        // otherwise, if `trial.include_counter` is false, enable the submit
-        // button if any input has been entered
-        } else if (line.textContent.length > 0) {
+        // otherwise, if both are false, enable the submit button if the
+        // minimum input has been entered
+        } else if (text.length >= trial.min_char) {
           // enable submit
           submit.disabled = false;
         } else {
@@ -215,10 +324,10 @@ var jsPsychProduction = (function (jspsych) {
         }
         // remove keyboard glow once the participant begins to use the keyboard
         // & remove blinking caret if any input has been entered
-        if (line.textContent.length > 0) {
+        if (text.length > 0) {
           keyboard.classList.remove("jspsych-production-keyboard-glow");
           line.classList.remove("blink-caret");
-        } else {
+        } else if (!trial.fill_in_the_blanks) {
           line.classList.add("blink-caret");
         }
       }
@@ -244,12 +353,13 @@ var jsPsychProduction = (function (jspsych) {
         // measure response time
         var rt = Math.round(performance.now() - start_time);
         // extract participant's production & remove extraneous whitespace
-        var response = line.textContent.replace(/\s+/g,' ').trim();
+        var response = line.textContent.replace(/\s+/g, " ").trim();
         // kill any remaining setTimeout handlers
         jsPsych.pluginAPI.clearAllTimeouts();
         // indicate whether the response is correct
+        var correct;
         if (trial.answer) {
-          var correct = trial.answer.includes(response);
+          correct = trial.answer.includes(response);
         }
         // save the initial trial data (collected before feedback & correction)
         if (trial_data.response === null) {
@@ -260,40 +370,76 @@ var jsPsychProduction = (function (jspsych) {
             response: response,
             answer: trial.answer.join(" ~ "),
             keys: trial.keys.join(""),
-          }
+          };
         }
         // display feedback; otherwise, end trial
-        if (trial.answer && (trial.show_feedback || trial.force_correct_production)) {
+        if (trial.answer && (trial.show_feedback || trial.force_correct_production || trial.mark_correct)) {
           display_feedback(response, correct);
         } else {
           end_trial();
         }
       }
-      // function to handle feedback to the subject
+      // function to handle feedback to the participant
       function display_feedback(response, correct, timeout = false) {
         // provide feedback
-        if (correct) {
+        if (correct || trial.mark_correct) {
           // add correct answer styling
-          prompt.classList.add("jspsych-production-correct");
           line.classList.add("jspsych-production-correct");
+          try {
+            prompt.classList.add("jspsych-production-correct");
+          } catch (e) {}
           // hide answer
-          answer.innerHTML = "";
+          try {
+            answer.innerHTML = "";
+          } catch (e) {}
         } else {
           // display correct answer
           if (trial.show_feedback) {
-            var display_answer = trial.prompt + trial.answer.join(`<span id="arrow-range" class="material-symbols-outlined">arrow_range</span>` + trial.prompt);
-            answer.innerHTML = `
-              <span id="jspsych-production-incorrect">${trial.prompt}${encode_red(response)}</span>
-              <span class="material-symbols-outlined">trending_flat</span>
-              <span id="jspsych-production-correct">${display_answer}</span>`;
+            var incorrect_answer;
+            var display_answer;
+            // prompt-initial
+            if (trial.prompt_before) {
+              incorrect_answer = trial.prompt + encode_red(response);
+              if (trial.first_answer_only) {
+                // show first answer only
+                display_answer = encode_red(trial.prompt + trial.answer[0]);
+              } else {
+                // show all possible answers
+                display_answer = encode_red(trial.prompt + trial.answer.join(`_` + trial.prompt));
+                display_answer = display_answer.replace("_", `<span class="function">r</span>`);
+              }
+            // prompt-final
+            } else {
+              incorrect_answer = encode_red(response) + trial.prompt;
+              if (trial.first_answer_only) {
+                // show first answer only
+                display_answer = encode_red(trial.answer[0] + trial.prompt);
+              } else {
+                // show all possible answers
+                display_answer = encode_red(trial.answer.join(trial.prompt + `_`) + trial.prompt);
+                display_answer = display_answer.replace("_", `<span class="function">r</span>`);
+              }
+            }
+            answer.innerHTML =
+              `<span id="jspsych-production-incorrect">${incorrect_answer}</span>` +
+              `<span id="jspsych-production-correct-container">` +
+                `<span class="function">a</span>` +
+                `<span id="jspsych-production-correct">${display_answer}</span>` +
+              `</span>`;
           }
-          // clear the production line, re-add the blinking caret, & reset the
-          // character counter
+          // clear the production line, re-add the blinking caret or blanks,
+          // re-enable keyboard, & reset the character counter
           if (trial.force_correct_production) {
             line.innerHTML = "";
-            line.classList.add("blink-caret");
+            if (trial.fill_in_the_blanks) {
+              blanks.innerHTML = blank.repeat(answer_length);
+              display_element.querySelectorAll(".jspsych-production-key-input")
+                .forEach(btn => btn.disabled = false);
+            } else {
+              line.classList.add("blink-caret");
+            }
             if (trial.include_counter) {
-              count.innerHTML = 0;
+              count.innerHTML = prompt_length;
             }
           }
           // disable submit
@@ -324,7 +470,7 @@ var jsPsychProduction = (function (jspsych) {
       // end trial if a time limit is set
       if (trial.trial_duration !== null) {
         jsPsych.pluginAPI.setTimeout(() => {
-          display_feedback('', false, true)
+          display_feedback('', false, true);
         }, trial.trial_duration);
       }
     }
