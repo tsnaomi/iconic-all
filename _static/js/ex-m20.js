@@ -202,7 +202,7 @@ var m20 = (function() {
 
   // function to generate image stimulus
   function stim_img(str, flip=false) {
-    var src = `/_static/stimuli/${str}.png`;
+    var src = `./_static/stimuli/${str}.png`;
     EXPERIMENT.images.push(src);
 
     if (flip) {

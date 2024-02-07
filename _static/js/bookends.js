@@ -33,10 +33,10 @@ var base = (function() {
       // add non-task images
       decrement_progress();
       images.push(...[
-        "/_static/images/lesson.png",
-        "/_static/images/quiz.png",
-        "/_static/images/fireworks.png",
-        "/_static/images/earth.png",
+        "./_static/images/lesson.png",
+        "./_static/images/quiz.png",
+        "./_static/images/fireworks.png",
+        "./_static/images/earth.png",
       ]);
       // remove duplicates
       images = Array.from(new Set(images));
@@ -64,7 +64,7 @@ var base = (function() {
       increment_trials();
       return {
         type: jsPsychHtmlButtonResponse,
-        stimulus: `<img src="/_static/images/lesson.png" />`,
+        stimulus: `<img src="./_static/images/lesson.png" />`,
         choices: [proceed, ],
         button_html: proceed_btn,
         css_classes: ["lesson", ],
@@ -76,7 +76,7 @@ var base = (function() {
       increment_trials();
       return {
         type: jsPsychHtmlButtonResponse,
-        stimulus: `<img src="/_static/images/quiz.png" />`,
+        stimulus: `<img src="./_static/images/quiz.png" />`,
         choices: [proceed, ],
         button_html: proceed_btn,
         css_classes: ["quiz", ],
@@ -95,7 +95,7 @@ var base = (function() {
           var correct = trials.filter({correct: true});
           var score = (correct.count() / trials.count()) * 100;
           return `<p>${Math.round(score)}%</p>` +
-            `<img src="/_static/images/fireworks.png" />`;
+            `<img src="./_static/images/fireworks.png" />`;
         },
         choices: [proceed, ],
         button_html: proceed_btn,

@@ -13,7 +13,7 @@ var templates = (function() {
     </p>
     <table>
       <tr>
-        <td><img src="/_static/images/lesson.png" /></td>
+        <td><img src="./_static/images/lesson.png" /></td>
         <td>
           The first half of the lesson will cover basic vocabulary and phrases.
           <br/>
@@ -22,7 +22,7 @@ var templates = (function() {
         </td>
       </tr>
       <tr>
-        <td><img src="/_static/images/quiz.png" /></td>
+        <td><img src="./_static/images/quiz.png" /></td>
         <td>
           The second half of the lesson will quiz your ability to use these vocabulary in longer phrases.
           Afterwards, you will see your quiz score!
@@ -499,7 +499,7 @@ var templates = (function() {
   // debriefing & disclosure
   TEMPLATES.debrief = `
     <h1>Thank you for participating!</h1>
-    <img src="/_static/images/earth.png" />
+    <img src="./_static/images/earth.png" />
     <p>
       <strong>Disclosure</strong>: This study did not involve testing a real language learning app. The exercises were designed to investigate your relative ordering preferences for <span class="iconic iconic-red">r</span>, <span class="iconic">b</span>, <span class="iconic">2</span>, <span class="iconic">3</span>, <span class="iconic">p</span>, and <span class="iconic">d</span>. During the quiz, questions appeared where a noun might be written with more than one of these symbols (e.g., <span class="iconic">Bb2</span> or <span class="iconic">B2b</span>). These questions were <em>not</em> included in the calculation of your quiz score, since there was no one correct answer.
     </p>
